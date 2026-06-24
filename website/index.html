@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OpenSuivi - Le logiciel open source de gestion et de suivi pour les classes de 2TNE. Créé par des enseignants pour les enseignants.">
+    <title>OpenSuivi - Gestion de Classe 2TNE</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="assets/logo.png" alt="OpenSuivi Logo">
+            <span>OpenSuivi</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Fonctionnalités</a>
+            <a href="#about">À propos</a>
+            <a href="https://github.com/Supoz9/OpenSuivi" target="_blank" class="btn-github"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">Version 1.0.0 Disponible 🎉</div>
+            <h1>Le suivi de classe, <br> <span class="gradient-text">réinventé pour la 2TNE.</span></h1>
+            <p>
+                Gérez vos élèves, leurs stages (PFMP), leur orientation et le journal de bord quotidien.
+                Un outil totalement gratuit et open-source conçu spécifiquement pour répondre aux besoins des enseignants.
+            </p>
+            <div class="hero-buttons">
+                <a href="https://github.com/Supoz9/OpenSuivi/releases" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-download"></i> Télécharger (Windows & Linux)
+                </a>
+                <a href="#features" class="btn btn-secondary">Découvrir l'outil</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="glass-card">
+                <img src="assets/logo.png" alt="Dashboard Preview Placeholder" class="floating">
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-header">
+            <h2>Pourquoi choisir <span class="gradient-text">OpenSuivi</span> ?</h2>
+            <p>Oubliez les feuilles de calcul complexes. Tout est centralisé dans une interface moderne et fluide.</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon-wrapper blue">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3>Tableau de Bord Global</h3>
+                <p>Visualisez en temps réel l'avancement de votre classe. Qui a trouvé son stage ? Qui nécessite un suivi particulier ? Tout est là, clair et précis.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon-wrapper green">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h3>Suivi des PFMP</h3>
+                <p>Gérez les périodes de stage avec simplicité. Périodes multiples, statut de recherche, et coordonnées des entreprises d'accueil.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon-wrapper purple">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <h3>Orientation (CIEL / MELEC)</h3>
+                <p>Enregistrez et suivez les vœux de vos élèves pour la classe de 1ère. Avec possibilité d'ajouter des choix personnalisés de réorientation.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon-wrapper orange">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3>Journal de Suivi</h3>
+                <p>Un carnet de bord chronologique pour noter le comportement, le travail et l'attitude. Chaque note est horodatée et colorée pour une lecture rapide.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon-wrapper red">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <h3>Export PDF en 1-Clic</h3>
+                <p>Générez un bilan individuel propre et professionnel pour vos conseils de classe ou vos rencontres parents/professeurs.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon-wrapper teal">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3>Sécurisé & Hors-Ligne</h3>
+                <p>Vos données sont stockées localement sur votre ordinateur via une base de données SQLite. Aucun cloud, aucune fuite : sécurité maximale.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="about-container glass-card">
+            <h2>Une démarche <span class="gradient-text">Open Source</span></h2>
+            <p>
+                <strong>OpenSuivi</strong> a été créé par Mennock Barthélémy (Supoz9), Professeur de CIEL au Lycée Claude Chappe (Arnage), pour répondre à un besoin concret sur le terrain.
+            </p>
+            <p>
+                Ce projet s'inscrit dans la philosophie de la <strong>Forge des Communs Numériques de l'Éducation Nationale</strong>. Sous licence MIT, il appartient à la communauté. N'hésitez pas à télécharger le code source, à le modifier, ou à contribuer pour ajouter vos propres fonctionnalités !
+            </p>
+            <a href="https://github.com/Supoz9/OpenSuivi" target="_blank" class="btn btn-primary mt-4">
+                <i class="fab fa-github"></i> Accéder au code source
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="assets/logo.png" alt="Logo"> OpenSuivi
+            </div>
+            <p>© 2026 - Conçu pour les enseignants. Distribué sous Licence MIT.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
