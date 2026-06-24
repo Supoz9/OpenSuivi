@@ -23,7 +23,7 @@ jobs:
         
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconsole --onefile --windowed --icon=assets/favicon.png --add-data "assets;assets" main.py
+        pyinstaller --noconsole --onefile --windowed --add-data "assets;assets" main.py
         Rename-Item -Path "dist\main.exe" -NewName "OpenSuivi.exe"
         
     - name: Upload Artifact
@@ -49,20 +49,19 @@ jobs:
         
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconsole --onefile --windowed --icon=assets/favicon.png --add-data "assets:assets" main.py
+        pyinstaller --noconsole --onefile --windowed --add-data "assets:assets" main.py
         mv dist/main dist/OpenSuivi
         
     - name: Create AppImage
       run: |
-        # Download linuxdeploy
         wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+        wget -c "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
         chmod +x linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-plugin-appimage-x86_64.AppImage
         
-        # Create AppDir structure
         mkdir -p AppDir/usr/bin
         cp dist/OpenSuivi AppDir/usr/bin/
         
-        # Create .desktop file
         cat <<EOF > AppDir/OpenSuivi.desktop
         [Desktop Entry]
         Name=OpenSuivi
@@ -72,11 +71,9 @@ jobs:
         Categories=Education;Utility;
         EOF
         
-        # Copy icon
         cp assets/favicon.png AppDir/favicon.png
         
-        # Run linuxdeploy to generate AppImage
-        ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --appimage-extract-and-run
+        APPIMAGE_EXTRACT_AND_RUN=1 ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
