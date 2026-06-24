@@ -1,0 +1,85 @@
+name: Build Executables
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --noconsole --onefile --windowed --icon=assets/favicon.png --add-data "assets;assets" main.py
+        Rename-Item -Path "dist\main.exe" -NewName "OpenSuivi.exe"
+        
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: OpenSuivi-Windows-Exe
+        path: dist/OpenSuivi.exe
+
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --noconsole --onefile --windowed --icon=assets/favicon.png --add-data "assets:assets" main.py
+        mv dist/main dist/OpenSuivi
+        
+    - name: Create AppImage
+      run: |
+        # Download linuxdeploy
+        wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+        chmod +x linuxdeploy-x86_64.AppImage
+        
+        # Create AppDir structure
+        mkdir -p AppDir/usr/bin
+        cp dist/OpenSuivi AppDir/usr/bin/
+        
+        # Create .desktop file
+        cat <<EOF > AppDir/OpenSuivi.desktop
+        [Desktop Entry]
+        Name=OpenSuivi
+        Exec=OpenSuivi
+        Icon=favicon
+        Type=Application
+        Categories=Education;Utility;
+        EOF
+        
+        # Copy icon
+        cp assets/favicon.png AppDir/favicon.png
+        
+        # Run linuxdeploy to generate AppImage
+        ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --appimage-extract-and-run
+        
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: OpenSuivi-Linux-AppImage
+        path: "*.AppImage"
