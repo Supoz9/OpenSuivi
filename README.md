@@ -18,12 +18,13 @@ Ce projet a été initialement développé pour être partagé sur la **Forge de
 
 ## 📥 Téléchargement (Pour les utilisateurs)
 
-Pas besoin d'installer Python ou de savoir coder ! Vous pouvez télécharger directement l'application prête à l'emploi (Version 1.0.0) :
+Pas besoin d'installer Python ou de savoir coder ! Vous pouvez télécharger directement l'application prête à l'emploi :
 
-- 🪟 **[⬇️ Télécharger pour Windows (OpenSuivi.exe)](https://github.com/Supoz9/OpenSuivi/releases/download/v1.0.0/OpenSuivi.exe)**
-- 🐧 **[⬇️ Télécharger pour Linux (OpenSuivi-x86_64.AppImage)](https://github.com/Supoz9/OpenSuivi/releases/download/v1.0.0/OpenSuivi-x86_64.AppImage)**
-
-*(Une fois téléchargé, il vous suffit de double-cliquer dessus pour lancer l'application !)*
+1. Allez dans l'onglet **[Releases](../../releases)** (ou **Actions**) sur le côté droit de cette page GitHub.
+2. Téléchargez la version qui correspond à votre ordinateur :
+   - Pour Windows : `OpenSuivi.exe`
+   - Pour Linux : `OpenSuivi-x86_64.AppImage`
+3. Double-cliquez, et c'est parti !
 
 ---
 
