@@ -35,8 +35,23 @@ class OpenSuiviApp(ctk.CTk):
         from database import init_db
         init_db()
 
+        # --- PATCH MESSAGEBOX (Toujours au premier plan) ---
+        import tkinter.messagebox
+        def patch_msgbox(func):
+            def wrapper(*args, **kwargs):
+                if 'parent' not in kwargs:
+                    focus = self.focus_get()
+                    kwargs['parent'] = focus.winfo_toplevel() if focus else self
+                return func(*args, **kwargs)
+            return wrapper
+            
+        tkinter.messagebox.askyesno = patch_msgbox(tkinter.messagebox.askyesno)
+        tkinter.messagebox.showerror = patch_msgbox(tkinter.messagebox.showerror)
+        tkinter.messagebox.showinfo = patch_msgbox(tkinter.messagebox.showinfo)
+        tkinter.messagebox.showwarning = patch_msgbox(tkinter.messagebox.showwarning)
+
         # --- CONFIGURATION DE LA FENÊTRE ---
-        self.title("OpenSuivi - Gestion de Classe 2TNE")
+        self.title("OpenSuivi - Gestion de Classe Bac Pro")
         self.geometry("1100x700")
         self.minsize(900, 600)
         
@@ -213,7 +228,7 @@ class OpenSuiviApp(ctk.CTk):
         # En-tête
         header_ori = ctk.CTkFrame(self.pages["orientation"], fg_color="transparent")
         header_ori.pack(fill="x", pady=20, padx=20)
-        ctk.CTkLabel(header_ori, text="Orientation 2TNE (CIEL / MELEC)", font=ctk.CTkFont(size=28, weight="bold")).pack(side="left")
+        ctk.CTkLabel(header_ori, text="Orientation Bac Pro (CIEL / MELEC)", font=ctk.CTkFont(size=28, weight="bold")).pack(side="left")
         
         # Layout 2 colonnes
         self.ori_grid = ctk.CTkFrame(self.pages["orientation"], fg_color="transparent")
@@ -253,16 +268,21 @@ class OpenSuiviApp(ctk.CTk):
         
         description = (
             "OpenSuivi est un outil gratuit conçu par un enseignant, pour les enseignants, dans le but de simplifier "
-            "le suivi individualisé, les recherches de stages (PFMP) et l'orientation des élèves de 2TNE."
+            "le suivi individualisé, les recherches de stages (PFMP) et l'orientation des élèves de Bac Pro."
         )
         ctk.CTkLabel(self.pages["configuration"], text=description, justify="left", wraplength=700).pack(pady=5, padx=20, anchor="w")
 
         info_logiciel = (
-            " Version : 1.0.0\n"
+            " Version : 1.1.0\n"
             " Licence : MIT (Open Source)\n"
             " Auteur : Mennock Barthélémy (Supoz9) - Professeur de CIEL\n"
             " Établissement : Lycée Claude Chappe - Arnage\n"
-            " Développé pour la Forge des Communs Numériques de l'Éducation Nationale"
+            " Développé pour la Forge des Communs Numériques de l'Éducation Nationale\n\n"
+            " Nouveautés (1.1.0) :\n"
+            " - Interface plus universelle pour l'ensemble des filières Bac Pro\n"
+            " - Comptage avancé des PFMP (gestion des stages multiples)\n"
+            " - Ajout du statut 'Non fait' et 'Cherche / En cours' pour les stages\n"
+            " - Résolution de bugs d'affichage des pop-ups (toujours au premier plan)"
         )
         ctk.CTkLabel(self.pages["configuration"], text=info_logiciel, justify="left", text_color="gray").pack(pady=10, padx=20, anchor="w")
         
@@ -715,7 +735,7 @@ class OpenSuiviApp(ctk.CTk):
         fen.geometry("400x350")
         
         ctk.CTkLabel(fen, text="Catégorie :").pack(pady=(10, 0))
-        e_cat = ctk.CTkOptionMenu(fen, values=["Comportement", "Travail", "Absence/Retard", "Autre"], width=300)
+        e_cat = ctk.CTkOptionMenu(fen, values=["Comportement", "Travail", "Autre"], width=300)
         e_cat.pack()
         
         ctk.CTkLabel(fen, text="Détails :").pack(pady=(10, 0))
@@ -795,10 +815,11 @@ class OpenSuiviApp(ctk.CTk):
                     id_pfmp, periode, statut, e_nom, e_adr, t_nom, t_tel, visite = stage
                     
                     couleurs_statut = {
-                        "En recherche": "#ef4444",      # Rouge
-                        "En attente": "#f59e0b",        # Orange
+                        "En recherche": "#f97316",      # Orange
+                        "En attente": "#f97316",        # Orange
                         "Trouvé": "#10b981",            # Vert
-                        "Terminé": "#3b82f6"            # Bleu
+                        "Terminé": "#10b981",           # Vert
+                        "Non fait": "#ef4444"           # Rouge
                     }
                     c_statut = couleurs_statut.get(statut, "gray")
                     
@@ -865,7 +886,7 @@ class OpenSuiviApp(ctk.CTk):
         e_periode.pack()
         
         ctk.CTkLabel(fen, text="Statut :").pack(pady=(10, 0))
-        e_statut = ctk.CTkOptionMenu(fen, values=["En recherche", "En attente", "Trouvé", "Terminé"], width=350)
+        e_statut = ctk.CTkOptionMenu(fen, values=["En recherche", "En attente", "Trouvé", "Terminé", "Non fait"], width=350)
         e_statut.set(statut if statut else "En recherche")
         e_statut.pack()
         
@@ -1109,9 +1130,17 @@ class OpenSuiviApp(ctk.CTk):
             cursor.execute("SELECT COUNT(id_eleve) FROM Eleves")
             tot_eleves = cursor.fetchone()[0] or 0
             
-            cursor.execute("SELECT COUNT(DISTINCT id_eleve) FROM Pfmp WHERE statut_recherche IN ('Trouvé', 'Terminé')")
-            el_trouve = cursor.fetchone()[0] or 0
-            el_non = tot_eleves - el_trouve
+            cursor.execute("SELECT COUNT(*) FROM Pfmp WHERE statut_recherche IN ('Trouvé', 'Terminé')")
+            stages_trouves = cursor.fetchone()[0] or 0
+            
+            cursor.execute("SELECT COUNT(*) FROM Pfmp WHERE statut_recherche IN ('En recherche', 'En attente')")
+            stages_en_cours = cursor.fetchone()[0] or 0
+            
+            cursor.execute("SELECT COUNT(*) FROM Pfmp WHERE statut_recherche = 'Non fait'")
+            stages_non_faits = cursor.fetchone()[0] or 0
+            
+            cursor.execute("SELECT COUNT(*) FROM Eleves WHERE id_eleve NOT IN (SELECT id_eleve FROM Pfmp)")
+            eleves_sans_stage = cursor.fetchone()[0] or 0
             
             h_pfmp = ctk.CTkFrame(self.card_pfmp, fg_color="transparent")
             h_pfmp.pack(fill="x", padx=20, pady=15)
@@ -1121,8 +1150,12 @@ class OpenSuiviApp(ctk.CTk):
             c_pfmp = ctk.CTkFrame(self.card_pfmp, fg_color="transparent")
             c_pfmp.pack(fill="x", padx=20, pady=(0, 20))
             
-            ctk.CTkLabel(c_pfmp, text=f"✅ {el_trouve} avec un stage", font=ctk.CTkFont(size=18, weight="bold"), text_color="#10b981").pack(side="left", padx=20)
-            ctk.CTkLabel(c_pfmp, text=f"❌ {el_non} cherchent encore", font=ctk.CTkFont(size=18, weight="bold"), text_color="#ef4444").pack(side="left", padx=20)
+            ctk.CTkLabel(c_pfmp, text=f"✅ {stages_trouves} validés", font=ctk.CTkFont(size=18, weight="bold"), text_color="#10b981").pack(side="left", padx=15)
+            ctk.CTkLabel(c_pfmp, text=f"⏳ {stages_en_cours} en cours", font=ctk.CTkFont(size=18, weight="bold"), text_color="#f97316").pack(side="left", padx=15)
+            ctk.CTkLabel(c_pfmp, text=f"🚫 {stages_non_faits} non faits", font=ctk.CTkFont(size=18, weight="bold"), text_color="#ef4444").pack(side="left", padx=15)
+            
+            if eleves_sans_stage > 0:
+                ctk.CTkLabel(self.card_pfmp, text=f"⚠️ {eleves_sans_stage} élève(s) n'ont aucun dossier de stage", font=ctk.CTkFont(size=14, weight="bold"), text_color="#f59e0b").pack(anchor="w", padx=35, pady=(0, 15))
             
             # --- 3. Orientation ---
             cursor.execute("SELECT voeu_1, COUNT(*) FROM Orientation GROUP BY voeu_1")
@@ -1188,26 +1221,38 @@ class OpenSuiviApp(ctk.CTk):
         
         g = ctk.CTkFrame(self.pages["details_pfmp"], fg_color="transparent")
         g.pack(fill="both", expand=True, padx=20, pady=10)
-        g.columnconfigure((0,1), weight=1)
+        g.columnconfigure((0,1,2), weight=1)
         
         try:
             conn = sqlite3.connect(os.path.join("data", "openn_suivi.db"))
             cursor = conn.cursor()
-            cursor.execute("SELECT DISTINCT Eleves.nom, Eleves.prenom FROM Eleves JOIN Pfmp ON Eleves.id_eleve = Pfmp.id_eleve WHERE Pfmp.statut_recherche IN ('Trouvé', 'Terminé') ORDER BY Eleves.nom")
+            cursor.execute("SELECT Eleves.nom, Eleves.prenom, Pfmp.periode FROM Eleves JOIN Pfmp ON Eleves.id_eleve = Pfmp.id_eleve WHERE Pfmp.statut_recherche IN ('Trouvé', 'Terminé') ORDER BY Eleves.nom")
             trv = cursor.fetchall()
-            cursor.execute("SELECT nom, prenom FROM Eleves ORDER BY nom")
-            ts = cursor.fetchall()
-            ntrv = [e for e in ts if e not in trv]
+            
+            cursor.execute("SELECT Eleves.nom, Eleves.prenom, Pfmp.periode FROM Eleves JOIN Pfmp ON Eleves.id_eleve = Pfmp.id_eleve WHERE Pfmp.statut_recherche IN ('En recherche', 'En attente') ORDER BY Eleves.nom")
+            enc = cursor.fetchall()
+            
+            cursor.execute("SELECT Eleves.nom, Eleves.prenom, Pfmp.periode FROM Eleves JOIN Pfmp ON Eleves.id_eleve = Pfmp.id_eleve WHERE Pfmp.statut_recherche = 'Non fait' ORDER BY Eleves.nom")
+            non_fait = cursor.fetchall()
+            
+            cursor.execute("SELECT nom, prenom FROM Eleves WHERE id_eleve NOT IN (SELECT id_eleve FROM Pfmp) ORDER BY nom")
+            sans_stage = cursor.fetchall()
             
             f1 = ctk.CTkScrollableFrame(g, corner_radius=10, border_width=2, border_color="#10b981")
             f1.grid(row=0, column=0, sticky="nsew", padx=10)
-            ctk.CTkLabel(f1, text="✅ Ont un stage", text_color="#10b981", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
-            for n, p in trv: ctk.CTkLabel(f1, text=f"{n} {p}").pack(anchor="w", padx=20, pady=2)
+            ctk.CTkLabel(f1, text="✅ Stages validés", text_color="#10b981", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
+            for n, p, per in trv: ctk.CTkLabel(f1, text=f"{n} {p} ({per if per else 'Période indéfinie'})").pack(anchor="w", padx=20, pady=2)
             
-            f2 = ctk.CTkScrollableFrame(g, corner_radius=10, border_width=2, border_color="#ef4444")
+            f2 = ctk.CTkScrollableFrame(g, corner_radius=10, border_width=2, border_color="#f97316")
             f2.grid(row=0, column=1, sticky="nsew", padx=10)
-            ctk.CTkLabel(f2, text="❌ Cherchent encore", text_color="#ef4444", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
-            for n, p in ntrv: ctk.CTkLabel(f2, text=f"{n} {p}").pack(anchor="w", padx=20, pady=2)
+            ctk.CTkLabel(f2, text="⏳ Recherches en cours", text_color="#f97316", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
+            for n, p, per in enc: ctk.CTkLabel(f2, text=f"{n} {p} ({per if per else 'Période indéfinie'})").pack(anchor="w", padx=20, pady=2)
+            for n, p in sans_stage: ctk.CTkLabel(f2, text=f"⚠️ {n} {p} (Aucun dossier)").pack(anchor="w", padx=20, pady=2)
+            
+            f3 = ctk.CTkScrollableFrame(g, corner_radius=10, border_width=2, border_color="#ef4444")
+            f3.grid(row=0, column=2, sticky="nsew", padx=10)
+            ctk.CTkLabel(f3, text="🚫 Stages non faits", text_color="#ef4444", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=10)
+            for n, p, per in non_fait: ctk.CTkLabel(f3, text=f"{n} {p} ({per if per else 'Période indéfinie'})").pack(anchor="w", padx=20, pady=2)
             conn.close()
         except Exception as e: print("Err details pfmp:", e)
         self.afficher_page("details_pfmp")

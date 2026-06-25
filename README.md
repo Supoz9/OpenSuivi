@@ -2,17 +2,27 @@
   <img src="assets/logo.png" alt="OpenSuivi Logo" width="200">
 </p>
 
-<h1 align="center">OpenSuivi - Gestion de Classe 2TNE</h1>
+<h1 align="center">OpenSuivi - Gestion de Classe Bac Pro</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version 1.1.0">
   <img src="https://img.shields.io/badge/licence-MIT-green.svg" alt="License MIT">
   <img src="https://img.shields.io/badge/python-3.x-yellow.svg" alt="Python 3">
 </p>
 
-**OpenSuivi** est un logiciel bureau gratuit et open source, conçu par un enseignant pour les enseignants. Il simplifie grandement le suivi individualisé, la gestion des stages (PFMP), et l'orientation des élèves, en particulier pour les classes de **Seconde TNE (Transitions Numérique et Énergétique)**.
+**OpenSuivi** est un logiciel bureau gratuit et open source, conçu par un enseignant pour les enseignants. Il simplifie grandement le suivi individualisé, la gestion des stages (PFMP), et l'orientation des élèves, en particulier pour les classes de **Bac Pro**.
 
 Ce projet a été initialement développé pour être partagé sur la **Forge des Communs Numériques de l'Éducation Nationale**.
+
+---
+
+### ✨ Nouveautés de la Version 1.1.0
+- **Ouverture globale Bac Pro** : Le logiciel s'adresse désormais à l'ensemble des filières professionnelles (les labels spécifiques ont été rendus universels).
+- **Gestion Avancée des PFMP** : 
+  - Ajout du statut "Non fait" pour les stages annulés ou non réalisés.
+  - Le tableau de bord a été réécrit pour compter intelligemment les *fiches de stages* (au lieu des élèves), permettant de gérer parfaitement les élèves ayant plusieurs périodes de stages dans l'année.
+  - La liste détaillée des recherches de stage a été améliorée (affichage des périodes pour chaque élève et alerte pour les élèves n'ayant aucune fiche créée).
+- **Confort d'utilisation** : Correction d'un bug système où les fenêtres de pop-up d'erreur ou de validation se cachaient derrière la fenêtre principale.
 
 ---
 

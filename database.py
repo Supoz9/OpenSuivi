@@ -85,7 +85,7 @@ def init_db():
     )
     """)
 
-    # Table 6 : Orientation (Spécifique TNE : CIEL / MELEC)
+    # Table 6 : Orientation (Spécifique Bac Pro : CIEL / MELEC)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Orientation (
         id_orientation INTEGER PRIMARY KEY AUTOINCREMENT,
