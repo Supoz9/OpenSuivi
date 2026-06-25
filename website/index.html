@@ -139,6 +139,36 @@
             <p>© 2026 - Conçu pour les enseignants. Distribué sous Licence MIT.</p>
         </div>
     </footer>
-
+<script>
+  // Si l'utilisateur n'est pas sur GitHub (donc il est sur la Forge)
+  if (!window.location.hostname.includes('github.com')) {
+    
+    // On sélectionne tous les liens de la page
+    const tousLesLiens = document.querySelectorAll('a');
+    
+    tousLesLiens.forEach(lien => {
+      // Si le lien pointe vers ton projet GitHub (Supoz9)
+      if (lien.href.includes('github.com/Supoz9/OpenSuivi')) {
+        
+        // 1. On remplace le domaine ET le pseudo par celui de la Forge (barthelemy)
+        let nouveauLien = lien.href.replace('github.com/Supoz9/OpenSuivi', 'forge.apps.education.fr/barthelemy/OpenSuivi');
+        
+        // 2. On ajoute le "/-/" requis par GitLab (la Forge) pour les sous-pages
+        if (nouveauLien.includes('OpenSuivi/') && !nouveauLien.includes('OpenSuivi/-')) {
+          nouveauLien = nouveauLien.replace('OpenSuivi/', 'OpenSuivi/-/');
+        }
+        
+        // 3. On adapte le format de la Release (/releases/tag/ v.s. /releases/)
+        if (nouveauLien.includes('/releases/tag/')) {
+          nouveauLien = nouveauLien.replace('/releases/tag/', '/releases/');
+        }
+        
+        // On applique le lien corrigé
+        lien.href = nouveauLien;
+      }
+    });
+  }
+</script>
+    
 </body>
 </html>
