@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/python-3.x-yellow.svg" alt="Python 3">
 </p>
 
-**OpenSuivi** est un logiciel bureau gratuit et open source, conçu par un enseignant pour les enseignants. Il simplifie grandement le suivi individualisé, la gestion des stages (PFMP), et l'orientation des élèves, en particulier pour les classes de **Bac Pro**.
+**OpenSuivi** est un logiciel bureau gratuit et open source, conçu pour le suivi de classe en tant que professeur principal. Il simplifie grandement le suivi individualisé, la gestion des stages (PFMP), et l'orientation des élèves, en particulier pour les classes de **Bac Pro**.
 
 Ce projet a été initialement développé pour être partagé sur la **Forge des Communs Numériques de l'Éducation Nationale**.
 
