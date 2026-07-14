@@ -12,8 +12,6 @@ stages:
 build-linux:
   stage: build
   image: python:3.11-slim
-  tags:
-    - docker
   before_script:
     # Dépendances système nécessaires pour tkinter et PyInstaller
     - apt-get update -qq
