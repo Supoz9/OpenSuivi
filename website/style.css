@@ -8,6 +8,7 @@
     src: url('fonts/inter-latin-ext.woff2') format('woff2');
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+
 @font-face {
     font-family: 'Inter';
     font-style: normal;
@@ -26,6 +27,7 @@
     src: url('fonts/outfit-latin-ext.woff2') format('woff2');
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+
 @font-face {
     font-family: 'Outfit';
     font-style: normal;
@@ -41,14 +43,14 @@
     --bg-secondary: #1e293b;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    
+
     --primary: #3b82f6;
     --primary-hover: #2563eb;
     --secondary: #10b981;
-    
+
     --card-bg: rgba(30, 41, 59, 0.7);
     --border-color: rgba(255, 255, 255, 0.1);
-    
+
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
 }
@@ -65,7 +67,7 @@ body {
     font-family: var(--font-body);
     line-height: 1.6;
     overflow-x: hidden;
-    background-image: 
+    background-image:
         radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
     background-attachment: fixed;
@@ -86,7 +88,9 @@ a {
 }
 
 /* Typography */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: var(--font-heading);
     font-weight: 800;
 }
@@ -251,8 +255,8 @@ h1, h2, h3 {
 .hero-image .glass-card {
     padding: 3rem;
     border-radius: 30px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .floating {
@@ -262,9 +266,17 @@ h1, h2, h3 {
 }
 
 @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
 }
 
 /* Features Section */
@@ -305,8 +317,8 @@ h1, h2, h3 {
 
 .feature-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .icon-wrapper {
@@ -320,12 +332,35 @@ h1, h2, h3 {
     margin-bottom: 1.5rem;
 }
 
-.icon-wrapper.blue { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-.icon-wrapper.green { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-.icon-wrapper.purple { background: rgba(168, 85, 247, 0.1); color: #c084fc; }
-.icon-wrapper.orange { background: rgba(249, 115, 22, 0.1); color: #fb923c; }
-.icon-wrapper.red { background: rgba(239, 68, 68, 0.1); color: #f87171; }
-.icon-wrapper.teal { background: rgba(20, 184, 166, 0.1); color: #2dd4bf; }
+.icon-wrapper.blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+}
+
+.icon-wrapper.green {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+}
+
+.icon-wrapper.purple {
+    background: rgba(168, 85, 247, 0.1);
+    color: #c084fc;
+}
+
+.icon-wrapper.orange {
+    background: rgba(249, 115, 22, 0.1);
+    color: #fb923c;
+}
+
+.icon-wrapper.red {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
+
+.icon-wrapper.teal {
+    background: rgba(20, 184, 166, 0.1);
+    color: #2dd4bf;
+}
 
 .feature-card h3 {
     font-size: 1.4rem;
@@ -412,15 +447,15 @@ footer p {
         text-align: center;
         padding-top: 6rem;
     }
-    
+
     .hero h1 {
         font-size: 3rem;
     }
-    
+
     .hero-buttons {
         justify-content: center;
     }
-    
+
     .navbar {
         flex-direction: column;
         gap: 1rem;
