@@ -1,0 +1,103 @@
+# ============================================================
+# CI/CD pour la Forge des Communs Numériques (GitLab)
+# Construit l'AppImage Linux et l'exécutable Windows
+# Les artefacts sont uploadés en tant que "artifacts" GitLab
+# et peuvent être attachés à une Release via l'UI ou l'API.
+# ============================================================
+
+stages:
+  - build
+
+# ── Build Linux (AppImage) ──────────────────────────────────
+build-linux:
+  stage: build
+  image: python:3.11-slim
+  tags:
+    - docker
+  before_script:
+    # Dépendances système nécessaires pour tkinter et PyInstaller
+    - apt-get update -qq
+    - apt-get install -y -qq
+        python3-tk
+        binutils
+        wget
+        file
+        fuse
+        libfuse2
+    # Dépendances Python
+    - pip install --upgrade pip -q
+    - pip install -r requirements.txt -q
+  script:
+    # 1. Build avec PyInstaller
+    - pyinstaller --noconsole --onefile --windowed --add-data "assets:assets" --name OpenSuivi main.py
+    - test -f dist/OpenSuivi || (echo "✘ Build PyInstaller échoué" && exit 1)
+
+    # 2. Préparer l'AppDir
+    - mkdir -p AppDir/usr/bin AppDir/usr/share/icons/hicolor/256x256/apps
+    - cp dist/OpenSuivi AppDir/usr/bin/OpenSuivi
+    - chmod +x AppDir/usr/bin/OpenSuivi
+    - cp assets/favicon.png AppDir/favicon.png
+    - cp assets/favicon.png AppDir/usr/share/icons/hicolor/256x256/apps/favicon.png
+    - |
+      cat > AppDir/OpenSuivi.desktop << 'EOF'
+      [Desktop Entry]
+      Name=OpenSuivi
+      Exec=OpenSuivi
+      Icon=favicon
+      Type=Application
+      Categories=Education;Utility;
+      Comment=Logiciel de suivi de classe pour Bac Pro
+      EOF
+    # Supprimer les espaces en début de ligne (héritage YAML)
+    - sed -i 's/^      //' AppDir/OpenSuivi.desktop
+    - |
+      cat > AppDir/AppRun << 'APPRUN'
+      #!/bin/bash
+      SELF=$(readlink -f "$0")
+      HERE=${SELF%/*}
+      export PATH="${HERE}/usr/bin/:${PATH}"
+      exec "${HERE}/usr/bin/OpenSuivi" "$@"
+      APPRUN
+    - sed -i 's/^      //' AppDir/AppRun
+    - chmod +x AppDir/AppRun
+
+    # 3. Construire l'AppImage avec appimagetool
+    - wget -q -O appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+    - chmod +x appimagetool
+    - APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool --no-appstream AppDir OpenSuivi-x86_64.AppImage
+    - test -f OpenSuivi-x86_64.AppImage || (echo "✘ AppImage non créée" && exit 1)
+    - echo "✓ AppImage créée avec succès"
+    - ls -lh OpenSuivi-x86_64.AppImage
+  artifacts:
+    name: "OpenSuivi-Linux-AppImage"
+    paths:
+      - OpenSuivi-x86_64.AppImage
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: manual
+
+# ── Build Windows (EXE) ────────────────────────────────────
+# Note : La Forge n'a généralement pas de runners Windows.
+# Ce job est désactivé par défaut. Pour construire l'EXE,
+# utiliser GitHub Actions ou le construire localement.
+# Si un runner Windows est disponible, décommenter ce bloc.
+#
+# build-windows:
+#   stage: build
+#   tags:
+#     - windows
+#   before_script:
+#     - python -m pip install --upgrade pip
+#     - pip install -r requirements.txt
+#   script:
+#     - pyinstaller --noconsole --onefile --windowed --add-data "assets;assets" main.py
+#     - Rename-Item -Path "dist\main.exe" -NewName "OpenSuivi.exe"
+#   artifacts:
+#     name: "OpenSuivi-Windows-Exe"
+#     paths:
+#       - dist/OpenSuivi.exe
+#     expire_in: 30 days
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+#     - when: manual
