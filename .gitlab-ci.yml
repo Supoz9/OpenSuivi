@@ -7,6 +7,7 @@
 
 stages:
   - build
+  - deploy
 
 # ── Build Linux (AppImage) ──────────────────────────────────
 build-linux:
@@ -99,3 +100,15 @@ build-linux:
 #   rules:
 #     - if: '$CI_COMMIT_BRANCH == "main"'
 #     - when: manual
+
+# ── Déploiement GitLab Pages ───────────────────────────────
+pages:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - cp -r website public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
