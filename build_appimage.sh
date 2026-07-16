@@ -43,7 +43,7 @@ pyinstaller \
     --noconsole \
     --onefile \
     --windowed \
-    --add-data "assets:assets" \
+    --add-data "$SCRIPT_DIR/assets:assets" \
     --name "$APP_NAME" \
     --distpath dist \
     --workpath build_pyinstaller \
