@@ -279,12 +279,13 @@ class OpenSuiviApp(ctk.CTk):
         ctk.CTkLabel(self.pages["configuration"], text=description, justify="left", wraplength=700).pack(pady=5, padx=20, anchor="w")
 
         info_logiciel = (
-            " Version : 1.1.0\n"
+            " Version : 1.2.0\n"
             " Licence : MIT (Open Source)\n"
             " Auteur : Mennock Barthélémy (Supoz9) - Professeur de CIEL\n"
             " Établissement : Lycée Claude Chappe - Arnage\n"
             " Développé pour la Forge des Communs Numériques de l'Éducation Nationale\n\n"
-            " Nouveautés (1.1.0) :\n"
+            " Nouveautés (1.2.0) :\n"
+            " - Import CSV depuis Pronote (copier-coller de la base élève)\n"
             " - Interface plus universelle pour l'ensemble des filières Bac Pro\n"
             " - Comptage avancé des PFMP (gestion des stages multiples)\n"
             " - Ajout du statut 'Non fait' et 'Cherche / En cours' pour les stages\n"

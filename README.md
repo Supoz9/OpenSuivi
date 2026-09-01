@@ -5,7 +5,7 @@
 <h1 align="center">OpenSuivi - Gestion de Classe Bac Pro</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version 1.1.0">
+  <img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version 1.2.0">
   <img src="https://img.shields.io/badge/licence-MIT-green.svg" alt="License MIT">
   <img src="https://img.shields.io/badge/python-3.x-yellow.svg" alt="Python 3">
 </p>
@@ -16,7 +16,7 @@ Ce projet a été initialement développé pour être partagé sur la **Forge de
 
 ---
 
-### ✨ Nouveautés de la Version 1.1.0
+### ✨ Nouveautés de la Version 1.2.0
 
 - **Import CSV depuis Pronote** : Importez votre base élève en un copier-coller directement depuis Pronote. Le logiciel détecte automatiquement les colonnes (Nom, Prénom, Classe), affiche un aperçu avec détection des doublons, puis insère les nouveaux élèves en un clic.
 - **Ouverture globale Bac Pro** : Le logiciel s'adresse désormais à l'ensemble des filières professionnelles (les labels spécifiques ont été rendus universels).
