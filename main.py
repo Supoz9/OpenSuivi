@@ -3,6 +3,8 @@ from tkinter import messagebox, filedialog
 import sqlite3
 import os
 import json
+import csv
+import io
 from PIL import Image
 
 # --- Gestion de la Configuration ---
@@ -160,6 +162,10 @@ class OpenSuiviApp(ctk.CTk):
         # Le bouton d'ajout
         btn_ajouter_eleve = ctk.CTkButton(header_eleves, text="+ Ajouter un élève", font=ctk.CTkFont(weight="bold"), command=self.ouvrir_formulaire_ajout)
         btn_ajouter_eleve.pack(side="right")
+
+        # Le bouton d'import CSV Pronote
+        btn_import_csv = ctk.CTkButton(header_eleves, text="📋 Importer CSV", font=ctk.CTkFont(weight="bold"), fg_color="#8b5cf6", hover_color="#7c3aed", command=self.ouvrir_import_csv)
+        btn_import_csv.pack(side="right", padx=(0, 10))
 
         # --- Zone de liste des élèves ---
         # On utilise un CTkScrollableFrame pour pouvoir faire défiler si tu as beaucoup d'élèves
@@ -398,6 +404,252 @@ class OpenSuiviApp(ctk.CTk):
         # Bouton d'enregistrement
         btn_enregistrer = ctk.CTkButton(fenetre_ajout, text="Enregistrer l'élève", command=valider_saisie)
         btn_enregistrer.pack(pady=10)
+
+    def ouvrir_import_csv(self):
+        """Ouvre une fenêtre style WeakAura pour coller et importer une base élève Pronote au format CSV/TSV."""
+        fenetre_import = ctk.CTkToplevel(self)
+        fenetre_import.title("Importer une base élève (Pronote)")
+        fenetre_import.geometry("800x850")
+        fenetre_import.resizable(True, True)
+        fenetre_import.minsize(700, 700)
+        fenetre_import.update()
+        fenetre_import.grab_set()
+
+        # --- En-tête ---
+        header_frame = ctk.CTkFrame(fenetre_import, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=(20, 5))
+        ctk.CTkLabel(header_frame, text="📋 Import Base Élève Pronote", font=ctk.CTkFont(size=22, weight="bold")).pack(side="left")
+
+        # --- Instructions ---
+        instructions = (
+            "1. Ouvrez Pronote et sélectionnez la liste d'élèves souhaitée.\n"
+            "2. Copiez les données (Ctrl+C) depuis Pronote (avec l'en-tête).\n"
+            "3. Collez-les ci-dessous (Ctrl+V) puis cliquez sur 'Analyser'.\n\n"
+            "Format attendu : colonnes séparées par des tabulations (TSV), avec au minimum les colonnes Nom et Prénom."
+        )
+        ctk.CTkLabel(fenetre_import, text=instructions, justify="left", text_color="gray", wraplength=700).pack(padx=20, pady=(0, 10), anchor="w")
+
+        # --- Zone de texte pour coller ---
+        lbl_coller = ctk.CTkLabel(fenetre_import, text="Collez les données ici :", font=ctk.CTkFont(weight="bold"))
+        lbl_coller.pack(anchor="w", padx=20)
+
+        zone_texte = ctk.CTkTextbox(fenetre_import, height=180, font=ctk.CTkFont(family="Courier", size=12))
+        zone_texte.pack(fill="both", expand=True, padx=20, pady=(5, 10))
+
+        # --- Zone d'aperçu ---
+        apercu_frame = ctk.CTkFrame(fenetre_import, fg_color="transparent")
+        apercu_frame.pack(fill="both", expand=True, padx=20, pady=(0, 10))
+
+        lbl_apercu = ctk.CTkLabel(apercu_frame, text="Aperçu :", font=ctk.CTkFont(weight="bold"))
+        lbl_apercu.pack(anchor="w")
+
+        apercu_scroll = ctk.CTkScrollableFrame(apercu_frame, height=150)
+        apercu_scroll.pack(fill="both", expand=True, pady=(5, 0))
+
+        lbl_statut = ctk.CTkLabel(apercu_frame, text="", text_color="gray")
+        lbl_statut.pack(anchor="w", pady=(5, 0))
+
+        # Variable pour stocker les élèves parsés
+        eleves_a_importer = []
+
+        def analyser_csv():
+            """Parse le texte collé et affiche un aperçu."""
+            nonlocal eleves_a_importer
+            eleves_a_importer.clear()
+
+            # Nettoyer l'aperçu
+            for widget in apercu_scroll.winfo_children():
+                widget.destroy()
+
+            texte_brut = zone_texte.get("1.0", "end").strip()
+            if not texte_brut:
+                lbl_statut.configure(text="⚠️ Aucune donnée à analyser. Collez d'abord les données.", text_color="#f59e0b")
+                btn_importer.configure(state="disabled")
+                return
+
+            try:
+                # Parser le CSV/TSV avec le module csv
+                reader = csv.reader(io.StringIO(texte_brut), delimiter='\t', quotechar='"')
+                lignes = list(reader)
+
+                if len(lignes) < 2:
+                    lbl_statut.configure(text="⚠️ Pas assez de lignes. Vérifiez que l'en-tête et les données sont présents.", text_color="#f59e0b")
+                    btn_importer.configure(state="disabled")
+                    return
+
+                # Identifier les colonnes à partir de l'en-tête
+                entete = [col.strip().lower() for col in lignes[0]]
+
+                # Trouver les index des colonnes importantes
+                idx_nom = None
+                idx_prenom = None
+                idx_classe = None
+
+                for i, col in enumerate(entete):
+                    if col == "nom":
+                        idx_nom = i
+                    elif col in ("prénom", "prenom"):
+                        idx_prenom = i
+                    elif col == "classe":
+                        idx_classe = i
+
+                if idx_nom is None or idx_prenom is None:
+                    lbl_statut.configure(
+                        text="❌ Colonnes 'Nom' et/ou 'Prénom' introuvables dans l'en-tête. Vérifiez le format.",
+                        text_color="#ef4444"
+                    )
+                    btn_importer.configure(state="disabled")
+                    return
+
+                # Vérifier les doublons existants en BDD
+                db_path = os.path.join("data", "openn_suivi.db")
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT nom, prenom FROM Eleves")
+                eleves_existants = set((r[0].upper(), r[1].upper()) for r in cursor.fetchall())
+                conn.close()
+
+                nb_doublons = 0
+                nb_vides = 0
+
+                for i, ligne in enumerate(lignes[1:], start=2):
+                    if len(ligne) <= max(idx_nom, idx_prenom):
+                        nb_vides += 1
+                        continue
+
+                    nom = ligne[idx_nom].strip().upper()
+                    prenom = ligne[idx_prenom].strip()
+                    # Capitaliser le prénom proprement (gérer les prénoms composés)
+                    prenom = '-'.join(part.capitalize() for part in prenom.split('-'))
+
+                    classe = ""
+                    if idx_classe is not None and len(ligne) > idx_classe:
+                        classe = ligne[idx_classe].strip()
+
+                    if not nom or not prenom:
+                        nb_vides += 1
+                        continue
+
+                    est_doublon = (nom, prenom.upper()) in eleves_existants
+                    if est_doublon:
+                        nb_doublons += 1
+
+                    eleves_a_importer.append({
+                        "nom": nom,
+                        "prenom": prenom,
+                        "classe": classe,
+                        "doublon": est_doublon
+                    })
+
+                # Afficher l'aperçu
+                if not eleves_a_importer:
+                    lbl_statut.configure(text="⚠️ Aucun élève valide trouvé dans les données.", text_color="#f59e0b")
+                    btn_importer.configure(state="disabled")
+                    return
+
+                # En-tête du tableau d'aperçu
+                header_row = ctk.CTkFrame(apercu_scroll, fg_color=("gray80", "gray30"))
+                header_row.pack(fill="x", pady=(0, 2), padx=2)
+                ctk.CTkLabel(header_row, text="#", width=30, font=ctk.CTkFont(weight="bold")).pack(side="left", padx=5)
+                ctk.CTkLabel(header_row, text="Nom", width=150, font=ctk.CTkFont(weight="bold"), anchor="w").pack(side="left", padx=5)
+                ctk.CTkLabel(header_row, text="Prénom", width=150, font=ctk.CTkFont(weight="bold"), anchor="w").pack(side="left", padx=5)
+                ctk.CTkLabel(header_row, text="Classe", width=100, font=ctk.CTkFont(weight="bold"), anchor="w").pack(side="left", padx=5)
+                ctk.CTkLabel(header_row, text="Statut", width=120, font=ctk.CTkFont(weight="bold"), anchor="w").pack(side="left", padx=5)
+
+                for idx, eleve in enumerate(eleves_a_importer, start=1):
+                    couleur_fond = ("#fef2f2", "#3b1111") if eleve["doublon"] else ("gray90", "gray25")
+                    row = ctk.CTkFrame(apercu_scroll, fg_color=couleur_fond)
+                    row.pack(fill="x", pady=1, padx=2)
+                    ctk.CTkLabel(row, text=str(idx), width=30).pack(side="left", padx=5)
+                    ctk.CTkLabel(row, text=eleve["nom"], width=150, anchor="w").pack(side="left", padx=5)
+                    ctk.CTkLabel(row, text=eleve["prenom"], width=150, anchor="w").pack(side="left", padx=5)
+                    ctk.CTkLabel(row, text=eleve["classe"], width=100, anchor="w").pack(side="left", padx=5)
+
+                    if eleve["doublon"]:
+                        ctk.CTkLabel(row, text="⚠️ Doublon", width=120, text_color="#f59e0b", anchor="w").pack(side="left", padx=5)
+                    else:
+                        ctk.CTkLabel(row, text="✅ Nouveau", width=120, text_color="#10b981", anchor="w").pack(side="left", padx=5)
+
+                nb_nouveaux = len([e for e in eleves_a_importer if not e["doublon"]])
+                statut_text = f"✅ {nb_nouveaux} élève(s) à importer"
+                if nb_doublons > 0:
+                    statut_text += f"  •  ⚠️ {nb_doublons} doublon(s) ignoré(s)"
+                if nb_vides > 0:
+                    statut_text += f"  •  {nb_vides} ligne(s) vide(s) ignorée(s)"
+
+                lbl_statut.configure(text=statut_text, text_color="#10b981")
+
+                if nb_nouveaux > 0:
+                    btn_importer.configure(state="normal")
+                else:
+                    btn_importer.configure(state="disabled")
+                    lbl_statut.configure(text="⚠️ Tous les élèves existent déjà dans la base.", text_color="#f59e0b")
+
+            except Exception as e:
+                lbl_statut.configure(text=f"❌ Erreur d'analyse : {e}", text_color="#ef4444")
+                btn_importer.configure(state="disabled")
+
+        def importer_eleves():
+            """Insère les élèves non-doublons dans la BDD."""
+            nouveaux = [e for e in eleves_a_importer if not e["doublon"]]
+            if not nouveaux:
+                return
+
+            try:
+                db_path = os.path.join("data", "openn_suivi.db")
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+
+                nb_inseres = 0
+                for eleve in nouveaux:
+                    try:
+                        cursor.execute(
+                            "INSERT INTO Eleves (nom, prenom, regime) VALUES (?, ?, ?)",
+                            (eleve["nom"], eleve["prenom"], "Externe")
+                        )
+                        nb_inseres += 1
+                    except sqlite3.IntegrityError:
+                        pass  # Doublon détecté au niveau BDD, on passe
+
+                conn.commit()
+                conn.close()
+
+                fenetre_import.destroy()
+
+                # Rafraîchir toutes les listes
+                self.charger_liste_eleves()
+                self.charger_pfmp_liste_eleves()
+                self.charger_orientation_liste_eleves()
+
+                messagebox.showinfo(
+                    "Import réussi",
+                    f"✅ {nb_inseres} élève(s) importé(s) avec succès depuis Pronote !"
+                )
+
+            except Exception as e:
+                messagebox.showerror("Erreur d'import", f"Impossible d'importer les élèves : {e}")
+
+        # --- Boutons d'action ---
+        btn_frame = ctk.CTkFrame(fenetre_import, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=(5, 20))
+
+        btn_analyser = ctk.CTkButton(
+            btn_frame, text="🔍 Analyser", font=ctk.CTkFont(weight="bold"),
+            fg_color="#3b82f6", hover_color="#2563eb", command=analyser_csv
+        )
+        btn_analyser.pack(side="left", padx=(0, 10))
+
+        btn_importer = ctk.CTkButton(
+            btn_frame, text="✅ Importer les élèves", font=ctk.CTkFont(weight="bold"),
+            fg_color="#10b981", hover_color="#059669", state="disabled", command=importer_eleves
+        )
+        btn_importer.pack(side="left", padx=(0, 10))
+
+        btn_annuler = ctk.CTkButton(
+            btn_frame, text="Annuler", fg_color="gray", hover_color="darkgray",
+            command=fenetre_import.destroy
+        )
+        btn_annuler.pack(side="right")
 
     def charger_liste_eleves(self):
         """Lit la BDD et affiche les élèves dans la liste."""
